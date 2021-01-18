@@ -1,0 +1,11 @@
+{
+  "name": "SpaBerry",
+  "version": "0.1.0",
+  "description": "RasPi Spa Control for Balboa 9800CP",
+  "main": "index.js",
+  "author": "heisler3030@users.noreply.github.com",
+  "dependencies": {
+    "express": "^4.17.1",
+    "pigpio": "^3.3.0"
+  }
+}
