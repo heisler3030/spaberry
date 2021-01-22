@@ -21,7 +21,7 @@ clock.watch((err, value) => {
     thisClock = process.hrtime.bigint();
     let dataBit = data.readSync();
     //let controlsBit = controls.readSync();
-    if (thisClock > lastClock + 1e7) {
+    if (thisClock > lastClock + BigInt(1e7)) {
         newframe();
     }
     dataFrame += dataBit;
