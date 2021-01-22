@@ -7,9 +7,9 @@ const Gpio = require('pigpio').Gpio;
 // const data = new Gpio(6, 'in');
 // const controls = new Gpio(13, 'in');
 
-const clock = new Gpio(5, {mode: Gpio.INPUT, edge: Gpio.RISING});
-const data = new Gpio(6, {mode: Gpio.INPUT, edge: Gpio.RISING});
-const controls = new Gpio(13, {mode: Gpio.INPUT, edge: Gpio.RISING});
+const clock = new Gpio(5, {mode: Gpio.INPUT, edge: Gpio.RISING_EDGE});
+const data = new Gpio(6, {mode: Gpio.INPUT, edge: Gpio.RISING_EDGE});
+const controls = new Gpio(13, {mode: Gpio.INPUT, edge: Gpio.RISING_EDGE});
 
 //let lastClock = process.hrtime.bigint();
 let lastTick = 0;
