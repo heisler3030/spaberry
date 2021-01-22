@@ -6,8 +6,8 @@ const clock = new Gpio(5, 'in', 'rising');
 const data = new Gpio(6, 'in');
 const controls = new Gpio(13, 'in');
 
-let lastClock = Date.now();
-let thisClock = Date.now();
+let lastClock = process.hrtime.bigint();
+let thisClock = process.hrtime.bigint();
 let clockCount = 0;
 let frameCount = 0;
 let dataFrame = "";
@@ -18,14 +18,14 @@ clock.watch((err, value) => {
     if (err) {
         throw err;     
     }
-    thisClock = Date.now();
+    thisClock = process.hrtime.bigint();
     let dataBit = data.readSync();
-    let controlsBit = controls.readSync();
-    if (thisClock > lastClock + 10) {
+    //let controlsBit = controls.readSync();
+    if (thisClock > lastClock + 1e7) {
         newframe();
     }
     dataFrame += dataBit;
-    controlsFrame += controlsBit;
+    //controlsFrame += controlsBit;
     clockCount++;
     lastClock = thisClock;
 });
@@ -36,7 +36,7 @@ function newframe() {
     controlsFrame = "";
     clockCount=0;
     frameCount++;
-    console.log(status);
+    //console.log(status);
 }
 
 process.on('SIGINT', _ => {
