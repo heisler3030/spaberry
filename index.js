@@ -13,18 +13,19 @@ let frameCount = 0;
 let dataFrame = "";
 let controlsFrame = "";
 let status = "";
+let dataBit = "";
 
 clock.watch((err, value) => {
     if (err) {
         throw err;     
     }
     thisClock = process.hrtime.bigint();
-    let dataBit = data.readSync();
+    //dataBit = data.readSync();
     //let controlsBit = controls.readSync();
     if (thisClock > lastClock + BigInt(1e7)) {
         newframe();
     }
-    dataFrame += dataBit;
+    // dataFrame += dataBit;
     //controlsFrame += controlsBit;
     clockCount++;
     lastClock = thisClock;
