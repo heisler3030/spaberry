@@ -52,12 +52,13 @@ let sampleLength = 2000;
 function readData() {
     let clockArray = [];
     let dataArray = [];
+let head = 0;
     
 
     while(true) {
-        let head = 0
+	head = 0;
         while (clock.digitalRead() == 0) {
-            head++
+            head++;
         }
         if (head > zeroCushion) break;
     }
@@ -73,7 +74,7 @@ function readData() {
         i++
         if (i > sampleLength) break;
     }
-    return [clockArray, dataArray];
+    return [clockArray, dataArray, head];
     
 }
 
@@ -113,7 +114,7 @@ app.get('/', function (req, res) {
     let rawdata = readData();
     let bits = generateBits(rawdata[0], rawdata[1]).join('');
     //let webStatus = status.replaceAll('|', '<br>');
-    res.send(`Status:  ${bits}`);
+    res.send(`Status:  ${bits} Length: ${bits.length} Head: ${rawdata[2]}`);
 });
 
 app.get('/temp', async function (req, res) {
