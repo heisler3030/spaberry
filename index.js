@@ -15,7 +15,7 @@ const controls = new Gpio(13, {mode: Gpio.INPUT, edge: Gpio.RISING_EDGE});
 let lastTick = 0;
 let clockCount = 0;
 let frameCount = 0;
-let dataFrame = "";
+let dataFrame = [];
 let controlsFrame = "";
 let status = "";
 let dataBit = "";
@@ -36,18 +36,60 @@ let dataBit = "";
 //     lastClock = thisClock;
 // });
 
-clock.on('interrupt', (level,tick) => {
-    if (tick > lastTick + 10000) { // if last tick was over 10ms ago
-        newframe(dataFrame, clockCount);
+// clock.on('interrupt', (level,tick) => {
+//     if ((tick >> 0) > (lastTick >> 0) + 10000) { // if last tick was over 10ms ago
+//         newframe(dataFrame, clockCount);
+//     }
+//     dataFrame.push(data.digitalRead());
+//     clockCount++
+//     lastTick = tick;
+// });
+
+
+function readData() {
+    let clockArray = [];
+    let dataArray = [];
+    
+
+    while(true) {
+        let head = 0
+        while (clock.digitalRead() == 0) {
+            head++
+        }
+        if (head > 1000) break;
     }
-    dataFrame += data.digitalRead();
-    clockCount++
-    lastTick = tick;
-});
+    
+    dataArray.push(data.digitalRead());
+    clockArray.push(1);
+    
+    while(clockArray.length < 1000) {
+        clockArray.push(clock.digitalRead());
+        dataArray.push(data.digitalRead());
+    }
+    return [clockArray, dataArray];
+    
+}
+
+function generateBits(clockArray, dataArray) {
+    let bits = [];
+    let i = 0;
+    let len = clockArray.length
+    while (i < len) {
+        while (i < len && clockArray[i]==0) i++;  // Find the first clock rise
+        let dataVal = 0;
+        while (i < len && clockArray[i]==1) {
+            if (dataArray[i] == 1) dataVal = 1;
+            i++;
+        }
+        bits.push(dataVal);
+    }
+    return bits;
+}
+
 
 function newframe(df, cc) {
     status = `${df}|${controlsFrame}|${cc} ticks|${frameCount} frames`;
-    dataFrame = "";
+    dataFrame = [];
     controlsFrame = "";
     clockCount=0;
     frameCount++;
@@ -61,8 +103,10 @@ process.on('SIGINT', _ => {
 });
  
 app.get('/', function (req, res) {
-    let webStatus = status.replaceAll('|', '<br>');
-    res.send(`Status:  ${webStatus}`);
+    let rawdata = readData();
+    let bits = generateBits(rawdata[0], rawdata[1]).join('');
+    //let webStatus = status.replaceAll('|', '<br>');
+    res.send(`Status:  ${bits}`);
 });
 
 app.get('/temp', async function (req, res) {
