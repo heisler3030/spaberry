@@ -46,6 +46,9 @@ let dataBit = "";
 // });
 
 
+let zeroCushion = 2000;
+let sampleLength = 2000;
+
 function readData() {
     let clockArray = [];
     let dataArray = [];
@@ -56,15 +59,19 @@ function readData() {
         while (clock.digitalRead() == 0) {
             head++
         }
-        if (head > 1000) break;
+        if (head > zeroCushion) break;
     }
     
     dataArray.push(data.digitalRead());
     clockArray.push(1);
     
-    while(clockArray.length < 1000) {
+    
+    let i = 0;
+    while(true) {
         clockArray.push(clock.digitalRead());
         dataArray.push(data.digitalRead());
+        i++
+        if (i > sampleLength) break;
     }
     return [clockArray, dataArray];
     
