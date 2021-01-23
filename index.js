@@ -21,35 +21,8 @@ let status = "";
 let dataBit = "";
 let eightySevenF="0100011111100001111111000000000001000000000010000000000000001000000000000000";
 
-
-// clock.watch((err, value) => {
-//     if (err) {
-//         throw err;     
-//     }
-//     let thisClock = process.hrtime.bigint();
-//     //dataBit = data.readSync();
-//     //let controlsBit = controls.readSync();
-//     if (thisClock > lastClock + BigInt(2e7)) {
-//         newframe(dataFrame, clockCount);
-//     }
-//     // dataFrame += dataBit;
-//     //controlsFrame += controlsBit;
-//     clockCount++;
-//     lastClock = thisClock;
-// });
-
-// clock.on('interrupt', (level,tick) => {
-//     if ((tick >> 0) > (lastTick >> 0) + 10000) { // if last tick was over 10ms ago
-//         newframe(dataFrame, clockCount);
-//     }
-//     dataFrame.push(data.digitalRead());
-//     clockCount++
-//     lastTick = tick;
-// });
-
-
-let zeroCushion = 2000;
-let sampleLength = 2000;
+let zeroCushion = 2500;
+let sampleLength = 2500;
 
 function readData() {
     let clockArray = [];
@@ -76,14 +49,7 @@ function readData() {
         dataArray.push(data.digitalRead());
         clockArray.push(clock.digitalRead());
         i++;
-    }    
-
-    // while(true) {
-    //     clockArray.push(clock.digitalRead());
-    //     dataArray.push(data.digitalRead());
-    //     i++
-    //     if (i > sampleLength) break;
-    // }
+    } 
     let elapsed = process.hrtime.bigint() - startTime;
     return [clockArray, dataArray, head, elapsed];
     
@@ -93,13 +59,14 @@ function generateBits(clockArray, dataArray) {
     let bits = [];
     let i = 0;
     let len = clockArray.length
-    while (i < len) {
+    while (true) {
         while (i < len && clockArray[i]==0) i++;  // Find the first clock rise
         let dataVal = 0;
         while (i < len && clockArray[i]==1) { // Sample data while it's high
             if (dataArray[i] == 1) dataVal = 1;
             i++;
         }
+        if (i >= len) break;
         bits.push(dataVal);
     }
     return bits;
@@ -123,11 +90,14 @@ app.get('/', function (req, res) {
             let dataSamples = rawdata[1];
             let trailingZeros = rawdata[0].length - rawdata[0].lastIndexOf(1)
             bits = generateBits(rawdata[0], rawdata[1]).join('');
+            console.log(`bits: ${bits.length}`);
         }
-        if (bits == lastbits) {
+        if (bits == lastbits || tries >= 30) {
+            console.log("inif");
             break;
         } else {
             lastbits = bits;
+            console.log("inelse");
             tries++;
         }
     }
