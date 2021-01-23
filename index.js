@@ -52,30 +52,37 @@ let sampleLength = 2000;
 function readData() {
     let clockArray = [];
     let dataArray = [];
-let head = 0;
+    let head = 0;
     
 
-    while(true) {
-	head = 0;
+    while(true) { // Wait until there are at least <zeroCushion> leading 0's on the clock line
+	    head = 0;
         while (clock.digitalRead() == 0) {
             head++;
         }
         if (head > zeroCushion) break;
     }
     
+    let startTime = process.hrtime.bigint();
+    let i = 0;
+    
     dataArray.push(data.digitalRead());
     clockArray.push(1);
     
-    
-    let i = 0;
-    let startTime = new Date();
-    while(true) {
-        clockArray.push(clock.digitalRead());
+
+    while(i >= sampleLength) {  // Read clock and data as fast as possible for $sampleLength iterations
         dataArray.push(data.digitalRead());
-        i++
-        if (i > sampleLength) break;
-    }
-    let elapsed = new Date() - startTime;
+        clockArray.push(clock.digitalRead());
+        i++;
+    }    
+
+    // while(true) {
+    //     clockArray.push(clock.digitalRead());
+    //     dataArray.push(data.digitalRead());
+    //     i++
+    //     if (i > sampleLength) break;
+    // }
+    let elapsed = process.hrtime.bigint() - startTime;
     return [clockArray, dataArray, head, elapsed];
     
 }
