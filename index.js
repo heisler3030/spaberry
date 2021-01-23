@@ -68,13 +68,15 @@ let head = 0;
     
     
     let i = 0;
+    let startTime = new Date();
     while(true) {
         clockArray.push(clock.digitalRead());
         dataArray.push(data.digitalRead());
         i++
         if (i > sampleLength) break;
     }
-    return [clockArray, dataArray, head];
+    let elapsed = new Date() - startTime;
+    return [clockArray, dataArray, head, elapsed];
     
 }
 
@@ -85,23 +87,13 @@ function generateBits(clockArray, dataArray) {
     while (i < len) {
         while (i < len && clockArray[i]==0) i++;  // Find the first clock rise
         let dataVal = 0;
-        while (i < len && clockArray[i]==1) {
+        while (i < len && clockArray[i]==1) { // Sample data while it's high
             if (dataArray[i] == 1) dataVal = 1;
             i++;
         }
         bits.push(dataVal);
     }
     return bits;
-}
-
-
-function newframe(df, cc) {
-    status = `${df}|${controlsFrame}|${cc} ticks|${frameCount} frames`;
-    dataFrame = [];
-    controlsFrame = "";
-    clockCount=0;
-    frameCount++;
-    //console.log(status);
 }
 
 process.on('SIGINT', _ => {
@@ -114,7 +106,7 @@ app.get('/', function (req, res) {
     let rawdata = readData();
     let bits = generateBits(rawdata[0], rawdata[1]).join('');
     //let webStatus = status.replaceAll('|', '<br>');
-    res.send(`Status:  ${bits} Length: ${bits.length} Head: ${rawdata[2]}`);
+    res.send(`Status:  ${bits} Length: ${bits.length} Head: ${rawdata[2]} Samples: ${rawdata[0].length} SamplingTime: ${rawdata[3]} ms`);
 });
 
 app.get('/temp', async function (req, res) {
