@@ -116,6 +116,7 @@ app.get('/', function (req, res) {
     let lastbits = "lastbits";
     let tries = 0;
     while (true){
+        bits = "";
         while (bits.length < 76) {
             let rawdata = readData();
             let clockSamples = rawdata[0];
