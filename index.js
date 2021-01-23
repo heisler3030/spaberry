@@ -19,6 +19,8 @@ let dataFrame = [];
 let controlsFrame = "";
 let status = "";
 let dataBit = "";
+let eightySevenF="0100011111100001111111000000000001000000000010000000000000001000000000000000";
+
 
 // clock.watch((err, value) => {
 //     if (err) {
@@ -70,7 +72,7 @@ function readData() {
     clockArray.push(1);
     
 
-    while(i >= sampleLength) {  // Read clock and data as fast as possible for $sampleLength iterations
+    while(i <= sampleLength) {  // Read clock and data as fast as possible for $sampleLength iterations
         dataArray.push(data.digitalRead());
         clockArray.push(clock.digitalRead());
         i++;
@@ -116,7 +118,7 @@ app.get('/', function (req, res) {
     let trailingZeros = rawdata[0].length - rawdata[0].lastIndexOf(1)
     let bits = generateBits(rawdata[0], rawdata[1]).join('');
     //let webStatus = status.replaceAll('|', '<br>');
-    res.send(`Status:  ${bits} Length: ${bits.length} Head: ${rawdata[2]} <br> Samples: ${clockSamples.length} SamplingTime: ${rawdata[3]} ms  TrailingZeros ${trailingZeros}`);
+    res.send(`Status:<br>${bits} <br>${eightySevenF}<br> Length: ${bits.length} Head: ${rawdata[2]} <br> Samples: ${clockSamples.length} SamplingTime: ${rawdata[3]} us  TrailingZeros ${trailingZeros}`);
 });
 
 app.get('/temp', async function (req, res) {
