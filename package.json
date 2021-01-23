@@ -9,4 +9,7 @@
     "onoff": "^6.0.1",
     "pigpio": "^3.3.0"
   }
+  "scripts": {
+    "launch": "sudo /home/pi/.nvm/versions/node/v15.6.0/bin/node index.js"
+  },
 }

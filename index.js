@@ -112,13 +112,29 @@ process.on('SIGINT', _ => {
 });
  
 app.get('/', function (req, res) {
-    let rawdata = readData();
-    let clockSamples = rawdata[0];
-    let dataSamples = rawdata[1];
-    let trailingZeros = rawdata[0].length - rawdata[0].lastIndexOf(1)
-    let bits = generateBits(rawdata[0], rawdata[1]).join('');
+    let bits = "";
+    let lastbits = "lastbits";
+    let tries = 0;
+    while (true){
+        while (bits.length < 76) {
+            let rawdata = readData();
+            let clockSamples = rawdata[0];
+            let dataSamples = rawdata[1];
+            let trailingZeros = rawdata[0].length - rawdata[0].lastIndexOf(1)
+            bits = generateBits(rawdata[0], rawdata[1]).join('');
+        }
+        if (bits == lastbits) {
+            break;
+        } else {
+            lastbits = bits;
+            tries++;
+        }
+    }
+    
+
     //let webStatus = status.replaceAll('|', '<br>');
-    res.send(`Status:<br>${bits} <br>${eightySevenF}<br> Length: ${bits.length} Head: ${rawdata[2]} <br> Samples: ${clockSamples.length} SamplingTime: ${rawdata[3]} us  TrailingZeros ${trailingZeros}`);
+    // res.send(`Status:<br>${bits} <br>${eightySevenF}<br> Length: ${bits.length} Head: ${rawdata[2]} <br> Samples: ${clockSamples.length} SamplingTime: ${rawdata[3]} us  TrailingZeros ${trailingZeros} in ${tries} tries`);
+    res.send(`Status:<br>${bits} <br>${eightySevenF}<br> in ${tries} tries`);
 });
 
 app.get('/temp', async function (req, res) {
