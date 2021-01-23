@@ -104,9 +104,12 @@ process.on('SIGINT', _ => {
  
 app.get('/', function (req, res) {
     let rawdata = readData();
+    let clockSamples = rawdata[0];
+    let dataSamples = rawdata[1];
+    let trailingZeros = rawdata[0].length - rawdata[0].lastIndexOf(1)
     let bits = generateBits(rawdata[0], rawdata[1]).join('');
     //let webStatus = status.replaceAll('|', '<br>');
-    res.send(`Status:  ${bits} Length: ${bits.length} Head: ${rawdata[2]} Samples: ${rawdata[0].length} SamplingTime: ${rawdata[3]} ms`);
+    res.send(`Status:  ${bits} Length: ${bits.length} Head: ${rawdata[2]} <br> Samples: ${clockSamples.length} SamplingTime: ${rawdata[3]} ms  TrailingZeros ${trailingZeros}`);
 });
 
 app.get('/temp', async function (req, res) {
