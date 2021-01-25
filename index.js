@@ -9,7 +9,7 @@ const Gpio = require('pigpio').Gpio;
 
 const clock = new Gpio(5, {mode: Gpio.INPUT, edge: Gpio.RISING_EDGE});
 const data = new Gpio(6, {mode: Gpio.INPUT, edge: Gpio.RISING_EDGE});
-const controls = new Gpio(13, {mode: Gpio.INPUT, edge: Gpio.RISING_EDGE});
+const panel = new Gpio(13, {mode: Gpio.INPUT, edge: Gpio.RISING_EDGE});
 
 //let lastClock = process.hrtime.bigint();
 let lastTick = 0;
@@ -54,14 +54,19 @@ function _decodeDisplay (dataArray) {
     let digit3 = onesMap[byte2] || "?";
     let digit2 = tensMap[byte3] || "?";
     
+    let mode = (dataArray.substring(60,1) == 1) ? "Standard" : "Economy"; 
     
     if (debug) {
-        console.log(`${byte3} --> ${digit2}`);
-        console.log(`${byte2} --> ${digit3}`);
-        console.log(`${byte1} --> ${digit4}`);
+        console.log(`Digit 2: ${byte3} --> ${digit2}`);
+        console.log(`Digit 3: ${byte2} --> ${digit3}`);
+        console.log(`Digit 4: ${byte1} --> ${digit4}`);
+        console.log(`Mode: ${mode} --> ${mode}`);
     }
     
-    return [digit2, digit3, digit4].join('');
+    return {
+        display: [digit2, digit3, digit4].join(''),
+        mode: mode
+    }
 }
 
 function _getBinaryData () {
@@ -118,6 +123,34 @@ function _readData() {
     return [clockArray, dataArray, head, elapsed];
 }
 
+function _readPanel() {
+    let clockArray = [];
+    let panelArray = [];
+    let head = 0;
+
+    while(true) { // Wait until there are at least <zeroCushion> leading 0's on the clock line
+	    head = 0;
+        while (clock.digitalRead() == 0) {
+            head++;
+        }
+        if (head > zeroCushion) break;
+    }
+    
+    let startTime = process.hrtime.bigint();
+    let i = 0;
+    
+    panelArray.push(panel.digitalRead());
+    clockArray.push(1);    
+
+    while(i <= sampleLength) {  // Read clock and data as fast as possible for $sampleLength iterations
+        panelArray.push(panel.digitalRead());
+        clockArray.push(clock.digitalRead());
+        i++;
+    } 
+    let elapsed = process.hrtime.bigint() - startTime;
+    return [clockArray, panelArray, head, elapsed];
+}
+
 function _generateBits(clockArray, dataArray) {
     let bits = [];
     let i = 0;
@@ -144,17 +177,25 @@ process.on('SIGINT', _ => {
 
 
 app.get('/', function (req, res) {
-
     let [bits, tries] = _getBinaryData();
-    let display = _decodeDisplay(bits);
+    let decoded =  _decodeDisplay(bits);
+    let display = decoded.display;
+    let mode = decoded.mode;
 
     //let webStatus = status.replaceAll('|', '<br>');
     // res.send(`Status:<br>${bits} <br>${eightySevenF}<br> Length: ${bits.length} Head: ${rawdata[2]} <br> Samples: ${clockSamples.length} SamplingTime: ${rawdata[3]} us  TrailingZeros ${trailingZeros} in ${tries} tries`);
-    res.send(`Status:<br>${bits}<br> in ${tries} tries<br><br>Current Temp is ${display}`);
+    res.send(`Status:<br>${bits}<br> in ${tries} tries<br><br>Current Temp is ${display} <br>Mode is ${mode}`);
 });
 
-app.get('/temp', async function (req, res) {
-  res.send('Temperature');
+app.get('/panel', async function (req, res) {
+    let [bits, tries] = _getBinaryData();
+    let decoded =  _decodeDisplay(bits);
+    let display = decoded.display;
+    let mode = decoded.mode;
+
+    //let webStatus = status.replaceAll('|', '<br>');
+    // res.send(`Status:<br>${bits} <br>${eightySevenF}<br> Length: ${bits.length} Head: ${rawdata[2]} <br> Samples: ${clockSamples.length} SamplingTime: ${rawdata[3]} us  TrailingZeros ${trailingZeros} in ${tries} tries`);
+    res.send(`Status:<br>${bits}<br> in ${tries} tries<br><br>Current Temp is ${display} <br>Mode is ${mode}`);
 });
 
 app.listen(process.env.PORT || 3000);
