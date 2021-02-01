@@ -4,27 +4,33 @@ module.exports.decodeDisplay = (dataArray) => {
 
     // Pass in a 76-bit binary array and get back a status object
 
-    let byte1 = dataArray.substring(0,8);
-    let byte2 = dataArray.substring(8,16);
-    let byte3 = dataArray.substring(16,24);
-    
+    dataString = dataArray.join('')
+
+    let byte1 = dataString.substring(0,8);
+    let byte2 = dataString.substring(8,16);
+    let byte3 = dataString.substring(16,24);
+
     let digit4 = _tensMap[byte1] || "?";
     let digit3 = _onesMap[byte2] || "?";
     let digit2 = _tensMap[byte3] || "?";
     
-    let mode = (dataArray.substring(60,1) == 1) ? "Standard" : "Economy"; 
-    
-    if (Config.debug) {
-        console.log(`Digit 2: ${byte3} --> ${digit2}`);
-        console.log(`Digit 3: ${byte2} --> ${digit3}`);
-        console.log(`Digit 4: ${byte1} --> ${digit4}`);
-        console.log(`Mode: ${mode} --> ${mode}`);
-    }
-    
-    return {
+    const displayStatus = {
         display: [digit2, digit3, digit4].join(''),
-        mode: mode
+        setHeat: _getBit(dataArray, 41),
+        mode: _getBit(dataArray, 60) ? "Standard" : "Economy",
+        heating: _getBit(dataArray, 40) ? "ON" : "OFF",
+        blower: _getBit(dataArray, 43) ? "ON" : "OFF",
+        jets: _getBit(dataArray, 49) ? "ON" : "OFF",
+        light: _getBit(dataArray, 48) ? "ON" : "OFF"        
     }
+
+    if (Config.debug) console.log(`displayStatus: ${JSON.stringify(displayStatus)}`)
+    return displayStatus
+
+}
+
+function _getBit(array, bit) {
+    return parseInt(array[bit-1]);
 }
 
 const _onesMap = {
