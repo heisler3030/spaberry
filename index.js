@@ -24,6 +24,13 @@ app.get('/', async function (req, res) {
     res.send(response);
 });
 
+app.get('/json', async function (req, res) {
+    let panelData = (await Comms.readData()).dataArray;
+    let decoded =  Decoder.decodeDisplay(panelData);
+    let response = decoded
+    res.send(response);
+});
+
 app.get('/command', async function (req, res) {
     let commandresult = (await Comms.sendCommand())
     res.send(commandresult);
