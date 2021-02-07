@@ -35,6 +35,7 @@ module.exports.readData = () => {
             if (debug) console.log(`inbound data received`);
 
             for (let ix = 0; ix < buf.length; ix += Notifier.NOTIFICATION_LENGTH) {
+                if(debug) console.log(`Loop: ix = ${ix} with dataArray.length = ${dataArray.length}`)
                 const seqno = buf.readUInt16LE(ix);
                 const tick = buf.readUInt32LE(ix + 4);
                 const level = buf.readUInt32LE(ix + 8);
@@ -52,8 +53,9 @@ module.exports.readData = () => {
                 } else dataReady = true; // set dataReady once we see a long gap
                                 
                 if (dataArray.length > 0 && tickdiff >= tickThreshold) {  // Once we are reading data, break if we see another big tickdiff
-                    if (debug) console.log(`break on tickdiff = ${tickdiff}`)
+                    if (debug) console.log(`break on tickdiff = ${tickdiff} with dataArray.length = ${dataArray.length}`)
                     bitstream.destroy();
+                    dataReady = false
                     break
                 };
 
