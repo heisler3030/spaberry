@@ -1,54 +1,71 @@
-// Note: 2 and 3 are interrupt-capable
+#include <digitalWriteFast.h>
 
-const byte topsidePanel = 3; //was 0
-const byte topsideData = 1;
-const byte topsideClock = 2;
-const byte boardClock = 8; //was 3
-const byte boardData = 4;
-const byte boardPanel = 5;
+// Note: 2 and 3 are interrupt-capable
+#define data 1
+#define clock 2
+#define controlIn 3
+#define controlOut 4
+
 const byte ledPin = 13;
 
 volatile byte ticks = 0;
+volatile bool LED_State = true;
+volatile int val = 0;
 
 void setup() {
-  pinMode(topsideClock, INPUT);
-  pinMode(boardClock, OUTPUT);
-  pinMode(boardData, INPUT);
-  pinMode(topsideData, OUTPUT);
-  pinMode(boardPanel, OUTPUT);
-  pinMode(topsidePanel, INPUT);
-  pinMode(ledPin, OUTPUT);
-  attachInterrupt(digitalPinToInterrupt(topsideClock), tick, RISING);
-  attachInterrupt(digitalPinToInterrupt(topsideClock), endtick, FALLING);
-  attachInterrupt(digitalPinToInterrupt(topsidePanel), paneltick, RISING);
-  attachInterrupt(digitalPinToInterrupt(topsidePanel), panelendtick, FALLING);
+  pinModeFast(data, INPUT);
+  pinModeFast(clock, INPUT);
+  pinModeFast(controlIn, INPUT);
+  pinModeFast(controlOut, OUTPUT);
+
+  // attachInterrupt(controlIn, controlUp, RISING);  
+  // attachInterrupt(controlIn, controlDown, FALLING);
+
+  //attachInterrupt(clock, tick, RISING);
+  
+  // attachInterrupt(digitalPinToInterrupt(controlIn), controlUp, RISING);  
+  // attachInterrupt(digitalPinToInterrupt(controlIn), controlDown, FALLING);
+  // attachInterrupt(digitalPinToInterrupt(controlIn), controlUp, HIGH);  
+  // attachInterrupt(digitalPinToInterrupt(controlIn), controlDown, LOW);
+
+  digitalWriteFast(controlOut, digitalReadFast(controlIn));  // Set controlOut to whatever the controlIn is to start
+
+  pinModeFast(ledPin, OUTPUT);
+  digitalWriteFast(ledPin, LOW);
+
+
+
 }
 
 void loop() {
-  if (ticks > 76) ticks = 0;
-  digitalWrite(ledPin, HIGH); // sets the LED on
-  delay(1000);                // waits for a second
-  digitalWrite(ledPin, LOW);  // sets the LED off
-  delay(1000);                // waits for a second  
+  // if (ticks > 76) { 
+  //   digitalWriteFast(ledPin, LED_State ? HIGH : LOW);
+  //   LED_State = !LED_State;
+  //   ticks = 0;
+  // }
+  val = digitalReadFast(controlIn);
+  digitalWriteFast(controlOut, val);
+
+  //digitalWrite(controlOut, digitalRead(controlIn));
+  //delay(100);
+
+  // digitalWrite(ledPin, LED_State ? HIGH : LOW); // sets the LED on
+  // delay(1000);                // waits for a second
+  // digitalWrite(ledPin, !LED_State ? HIGH : LOW);  // sets the LED off
+  // delay(1000);                // waits for a second  
 }
 
 void tick() {
-  digitalWrite(boardClock, HIGH);
-  digitalWrite(topsideData, digitalRead(boardData));
-  //digitalWrite(boardPanel, digitalRead(topsidePanel));
   ticks++;
 }
 
 void endtick() {
-  digitalWrite(boardClock, LOW);
-  digitalWrite(topsideData, LOW);
-  //digitalWrite(boardPanel, LOW);
 }
 
-void paneltick() {
-  digitalWrite(boardPanel, HIGH);
+void controlUp() {
+  digitalWriteFast(controlOut, HIGH);
 }
 
-void panelendtick() {
-  digitalWrite(boardPanel, LOW);
+void controlDown() {
+  digitalWriteFast(controlOut, LOW);
 }
