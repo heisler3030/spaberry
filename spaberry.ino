@@ -6,11 +6,14 @@
 #define controlIn 3
 #define controlOut 4
 
-const byte ledPin = 13;
-
 volatile byte ticks = 0;
-volatile bool LED_State = true;
 volatile int controlLevel = 0;
+volatile unsigned long lastTick = millis();
+volatile byte command = 0;
+
+const byte ledPin = 13;
+volatile bool LED_State = true;
+
 
 void setup() {
   pinModeFast(ledPin, OUTPUT);
@@ -21,8 +24,9 @@ void setup() {
   pinModeFast(controlIn, INPUT);
   pinModeFast(controlOut, OUTPUT);
 
-  digitalWriteFast(controlOut, LOW);  // Set controlOut to low as starting point
-  // Await a HIGH on controlIn
+  digitalWriteFast(controlOut, LOW);  // Set controlOut to low as starting point - won't need this once there is a pulldown in place
+
+  // Await a HIGH on controlIn and flash the LED while waiting
   while(digitalReadFast(controlIn) != HIGH) {
     digitalWrite(ledPin, HIGH); // sets the LED on
     delay(1000);                // waits for a second
@@ -30,19 +34,20 @@ void setup() {
     delay(1000);                // waits for a second  
   }
 
+  // Initiate interrupt routines
   attachInterrupt(digitalPinToInterrupt(controlIn), bangControl, CHANGE);  
-  attachInterrupt(clock, tick, RISING);
-
-
-
-
-  //digitalWriteFast(controlOut, digitalReadFast(controlIn));  // Set controlOut to whatever the controlIn is to start
-
-
+  attachInterrupt(digitalPinToInterrupt(clock), tick, RISING);
 
 }
 
 void loop() {
+  
+  // FOR TESTING ONLY
+  delay(1000); // Wait 5 seconds
+  command = 15; // Set command to 'true'
+  //if (command) digitalWriteFast(ledPin, HIGH);  // if command is true, turn on the LED
+
+
   // if (ticks > 76) { 
   //   digitalWriteFast(ledPin, LED_State ? HIGH : LOW);
   //   LED_State = !LED_State;
@@ -61,12 +66,30 @@ void loop() {
 }
 
 void tick() {
-  ticks++;
+  digitalWriteFast(ledPin, HIGH); //FOR TESTING  
   // If time since last tick > 5ms then ticks = 0;
-}
+  if (millis() - lastTick > 5) ticks = 0;
+  lastTick = millis();
+  ticks++;
 
-void bangControl() {
-  controlLevel = digitalReadFast(controlIn);
+  // proof of concept -- press DOWN
+  if (command) {
+    switch (ticks) {
+      case 73:
+        digitalWriteFast(controlOut, HIGH);
+        break;
+      case 74:
+        digitalWriteFast(controlOut, HIGH);
+        break;
+      case 75:
+        digitalWriteFast(controlOut, HIGH);
+        break;
+      case 76:
+        digitalWriteFast(controlOut, HIGH);
+        command = 0;  // Clear command from memory
+        digitalWriteFast(ledPin, LOW);  // FOR TESTING
+    }
+  }
 
   // If there is a remote command
   //   case ticks
@@ -77,5 +100,9 @@ void bangControl() {
   //        and clear command
   // Else
 
+}
+
+void bangControl() {
+  controlLevel = digitalReadFast(controlIn);
   digitalWriteFast(controlOut, controlLevel);
 }
