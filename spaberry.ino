@@ -10,7 +10,7 @@ const byte ledPin = 13;
 
 volatile byte ticks = 0;
 volatile bool LED_State = true;
-volatile int val = 0;
+volatile int controlLevel = 0;
 
 void setup() {
   pinModeFast(data, INPUT);
@@ -18,22 +18,13 @@ void setup() {
   pinModeFast(controlIn, INPUT);
   pinModeFast(controlOut, OUTPUT);
 
-  // attachInterrupt(controlIn, controlUp, RISING);  
-  // attachInterrupt(controlIn, controlDown, FALLING);
-
-  //attachInterrupt(clock, tick, RISING);
-  
-  // attachInterrupt(digitalPinToInterrupt(controlIn), controlUp, RISING);  
-  // attachInterrupt(digitalPinToInterrupt(controlIn), controlDown, FALLING);
-  // attachInterrupt(digitalPinToInterrupt(controlIn), controlUp, HIGH);  
-  // attachInterrupt(digitalPinToInterrupt(controlIn), controlDown, LOW);
+  attachInterrupt(digitalPinToInterrupt(controlIn), bangControl, CHANGE);  
+  attachInterrupt(clock, tick, RISING);
 
   digitalWriteFast(controlOut, digitalReadFast(controlIn));  // Set controlOut to whatever the controlIn is to start
 
   pinModeFast(ledPin, OUTPUT);
   digitalWriteFast(ledPin, LOW);
-
-
 
 }
 
@@ -43,8 +34,8 @@ void loop() {
   //   LED_State = !LED_State;
   //   ticks = 0;
   // }
-  val = digitalReadFast(controlIn);
-  digitalWriteFast(controlOut, val);
+  // val = digitalReadFast(controlIn);
+  // digitalWriteFast(controlOut, val);
 
   //digitalWrite(controlOut, digitalRead(controlIn));
   //delay(100);
@@ -57,15 +48,20 @@ void loop() {
 
 void tick() {
   ticks++;
+  // If time since last tick > 5ms then ticks = 0;
 }
 
-void endtick() {
-}
+void bangControl() {
+  controlLevel = digitalReadFast(controlIn);
 
-void controlUp() {
-  digitalWriteFast(controlOut, HIGH);
-}
+  // If there is a remote command
+  //   case ticks
+  //     73 then push bit 1 of command
+  //     74 then push bit 2 of command
+  //     75 then push bit 3 of command
+  //     76 then push bit 4 of command
+  //        and clear command
+  // Else
 
-void controlDown() {
-  digitalWriteFast(controlOut, LOW);
+  digitalWriteFast(controlOut, controlLevel);
 }
