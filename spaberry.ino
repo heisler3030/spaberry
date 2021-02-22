@@ -13,18 +13,32 @@ volatile bool LED_State = true;
 volatile int controlLevel = 0;
 
 void setup() {
+  pinModeFast(ledPin, OUTPUT);
+  digitalWriteFast(ledPin, LOW);
+
   pinModeFast(data, INPUT);
   pinModeFast(clock, INPUT);
   pinModeFast(controlIn, INPUT);
   pinModeFast(controlOut, OUTPUT);
 
+  digitalWriteFast(controlOut, LOW);  // Set controlOut to low as starting point
+  // Await a HIGH on controlIn
+  while(digitalReadFast(controlIn) != HIGH) {
+    digitalWrite(ledPin, HIGH); // sets the LED on
+    delay(1000);                // waits for a second
+    digitalWrite(ledPin, LOW);  // sets the LED off
+    delay(1000);                // waits for a second  
+  }
+
   attachInterrupt(digitalPinToInterrupt(controlIn), bangControl, CHANGE);  
   attachInterrupt(clock, tick, RISING);
 
-  digitalWriteFast(controlOut, digitalReadFast(controlIn));  // Set controlOut to whatever the controlIn is to start
 
-  pinModeFast(ledPin, OUTPUT);
-  digitalWriteFast(ledPin, LOW);
+
+
+  //digitalWriteFast(controlOut, digitalReadFast(controlIn));  // Set controlOut to whatever the controlIn is to start
+
+
 
 }
 
