@@ -1,4 +1,5 @@
 const Config = require('./config');
+const debug = Config.debug
 
 module.exports.decodeDisplay = (dataArray) => {
 
@@ -6,6 +7,7 @@ module.exports.decodeDisplay = (dataArray) => {
 
     dataString = dataArray.join('')
 
+    // substring() extracts characters from indexStart up to but not including indexEnd
     let byte1 = dataString.substring(0,7);
     let byte2 = dataString.substring(8,15);
     let byte3 = dataString.substring(15,22);
@@ -13,9 +15,9 @@ module.exports.decodeDisplay = (dataArray) => {
     let digit4 = _digitMap[byte1] || "?";
     let digit3 = _digitMap[byte2] || "?";
     let digit2 = _digitMap[byte3] || "?";
-    let digit1 = _getBit(dataArray, 22) ? null : 1;
+    let digit1 = _getBit(dataArray, 25) ? 1 : null;
 
-    let temperature = (100 * digit1) + (10 * digit2) + digit3;
+    let temperature = (100 * digit1) + (10 * digit2) + (1 * digit3);
     
     const displayStatus = {
         display: [digit1, digit2, digit3, digit4].join(''),
@@ -28,7 +30,8 @@ module.exports.decodeDisplay = (dataArray) => {
         temperature: temperature  
     }
 
-    if (Config.debug) console.log(`displayStatus: ${JSON.stringify(displayStatus)}`)
+    if (debug) console.log(`byte1: ${byte1} byte2: ${byte2} byte3: ${byte3}`)
+    if (debug) console.log(`displayStatus: ${JSON.stringify(displayStatus)}`)
     return displayStatus
 
 }
@@ -38,7 +41,7 @@ function _getBit(array, bit) {
 }
 
 const _digitMap = {
-    "1111110":0, 
+    "1111110":"0", // to prevent evaluation to 'false'
     "0110000":1,
     "1101101":2,
     "1111001":3,

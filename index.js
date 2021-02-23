@@ -50,8 +50,30 @@ app.get('/readcontrols', async function (req, res) {
     res.send(response);
 });
 
-app.get('/serial', async function (req, res) {
+app.get('/tempdown', async function (req, res) {
     let commands = [15,15,15]
+    console.log(`writing ${commands}`);
+    port.write(commands, (err) => {
+        if (err) {
+          return console.log('Error on write: ', err.message);
+        }
+    });
+    res.send("ok");
+});
+
+app.get('/tempup', async function (req, res) {
+    let commands = [14,14,14]
+    console.log(`writing ${commands}`);
+    port.write(commands, (err) => {
+        if (err) {
+          return console.log('Error on write: ', err.message);
+        }
+    });
+    res.send("ok");
+});
+
+app.get('/mode', async function (req, res) {
+    let commands = [8]
     console.log(`writing ${commands}`);
     port.write(commands, (err) => {
         if (err) {

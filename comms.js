@@ -1,8 +1,8 @@
 const Gpio = require('pigpio').Gpio;
 const Notifier = require('pigpio').Notifier;
 const Config = require('./config');
-// const debug = false
-const debug = Config.debug;
+const debug = false
+//const debug = Config.debug;
 
 const clockPin = 5;  // pin with clock signal from board
 const dataPin = 6; // pin with communications from board to display
