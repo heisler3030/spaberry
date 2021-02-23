@@ -35,7 +35,7 @@ void setup() {
 
   // Initiate interrupt routines
   attachInterrupt(digitalPinToInterrupt(controlIn), bangControl, CHANGE);  
-  attachInterrupt(digitalPinToInterrupt(clock), tick, RISING);
+  attachInterrupt(digitalPinToInterrupt(clock), tick, CHANGE);
 
   digitalWriteFast(controlOut, HIGH);  // Set control high to init board
 
@@ -45,8 +45,8 @@ void setup() {
 void loop() {
   
   // FOR TESTING ONLY
-  delay(5000); // Wait 1 seconds
-  command = 0; // Set command to 'true'
+  delay(1000); // Wait 1 seconds
+  command = 15; // Set command to 'true'
   //if (command) digitalWriteFast(ledPin, HIGH);  // if command is true, turn on the LED
 
 
@@ -68,37 +68,39 @@ void loop() {
 }
 
 void tick() {
+  if (digitalReadFast(clock) == HIGH) {
+    clockRising();
+  } else {
+    clockFalling();
+  }
+}
+
+void clockRising() {
   if (millis() - lastTick > 5) ticks = 0;
   lastTick = millis();
   ticks++;
 
-  // proof of concept -- press MODE
+  // proof of concept -- press DOWN
   if (command) {
     switch (ticks) {
       case 73:
         digitalWriteFast(controlOut, HIGH);
         break;
       case 74:
-        digitalWriteFast(controlOut, LOW);
+        digitalWriteFast(controlOut, HIGH);
         break;
       case 75:
-        digitalWriteFast(controlOut, LOW);
+        digitalWriteFast(controlOut, HIGH);
         break;
       case 76:
-        digitalWriteFast(controlOut, LOW);
-        command = 0;  // Clear command from memory
+        digitalWriteFast(controlOut, HIGH);
     }
   }
+}
 
-  // If there is a remote command
-  //   case ticks
-  //     73 then push bit 1 of command
-  //     74 then push bit 2 of command
-  //     75 then push bit 3 of command
-  //     76 then push bit 4 of command
-  //        and clear command
-  // Else
-
+void clockFalling() { // bang down
+  if (command && ticks >= 73) digitalWriteFast(controlOut, LOW);
+  if (command && ticks >= 76) command = 0;  // Clear command from memory
 }
 
 void bangControl() {
