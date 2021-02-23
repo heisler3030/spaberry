@@ -32,9 +32,6 @@ void setup() {
 
   pinModeFast(data, INPUT);
   pinModeFast(clock, INPUT);
-  // pinModeFast(controlOut, OUTPUT);
- // digitalWriteFast(controlOut, LOW);  // Set controlOut to low as starting point - won't need this once there is a pulldown in place
-
 
   // Initiate interrupt routines
   attachInterrupt(digitalPinToInterrupt(controlIn), bangControl, CHANGE);  
@@ -48,8 +45,8 @@ void setup() {
 void loop() {
   
   // FOR TESTING ONLY
-  delay(1000); // Wait 1 seconds
-  command = 15; // Set command to 'true'
+  delay(5000); // Wait 1 seconds
+  command = 0; // Set command to 'true'
   //if (command) digitalWriteFast(ledPin, HIGH);  // if command is true, turn on the LED
 
 
@@ -71,28 +68,25 @@ void loop() {
 }
 
 void tick() {
-  digitalWriteFast(ledPin, HIGH); //FOR TESTING  
-  // If time since last tick > 5ms then ticks = 0;
   if (millis() - lastTick > 5) ticks = 0;
   lastTick = millis();
   ticks++;
 
-  // proof of concept -- press DOWN
+  // proof of concept -- press MODE
   if (command) {
     switch (ticks) {
       case 73:
         digitalWriteFast(controlOut, HIGH);
         break;
       case 74:
-        digitalWriteFast(controlOut, HIGH);
+        digitalWriteFast(controlOut, LOW);
         break;
       case 75:
-        digitalWriteFast(controlOut, HIGH);
+        digitalWriteFast(controlOut, LOW);
         break;
       case 76:
-        digitalWriteFast(controlOut, HIGH);
+        digitalWriteFast(controlOut, LOW);
         command = 0;  // Clear command from memory
-        digitalWriteFast(ledPin, LOW);  // FOR TESTING
     }
   }
 
