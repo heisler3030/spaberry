@@ -1,7 +1,7 @@
 #include <digitalWriteFast.h>
 
 // Note: 2 and 3 are interrupt-capable
-#define data 1
+#define data 5
 #define clock 2
 #define controlIn 3
 #define controlOut 4
@@ -9,7 +9,9 @@
 volatile byte ticks = 0;
 volatile int controlLevel = 0;
 volatile unsigned long lastTick = millis();
+volatile byte stagedCommand = 0;
 volatile byte command = 0;
+//volatile byte input;
 
 const byte ledPin = 13;
 volatile bool LED_State = true;
@@ -22,12 +24,10 @@ void setup() {
   pinModeFast(controlOut, OUTPUT);
   digitalWriteFast(controlOut, LOW);  // Set controlOut to low as starting point
 
+// Comment out for bench testing
   // Await a HIGH on controlIn and flash the LED while waiting
   while(digitalReadFast(controlIn) != HIGH) {
-    digitalWrite(ledPin, HIGH); // sets the LED on
-    delay(1000);                // waits for a second
-    digitalWrite(ledPin, LOW);  // sets the LED off
-    delay(1000);                // waits for a second  
+    flashLed(1,1000);
   }
 
   pinModeFast(data, INPUT);
@@ -39,32 +39,31 @@ void setup() {
 
   digitalWriteFast(controlOut, HIGH);  // Set control high to init board
 
+  // Init Serial
+  Serial.begin(115200); // Starts the serial communication
+  Serial.println("hello from arduino!");
 
 }
 
 void loop() {
-  
-  // FOR TESTING ONLY
-  delay(1000); // Wait 1 seconds
-  command = 15; // Set command to 'true'
-  //if (command) digitalWriteFast(ledPin, HIGH);  // if command is true, turn on the LED
 
+  // Listen for command on Serial
+  // Each command is one byte
+  // Dequeue one by one and stage to be activated on clock 0
+  // On clock zero activate and move next command into staging variable
+  if(Serial.available()){
+      stagedCommand = Serial.read();  // Receives as byte
+      flashLed(2,250);
+      // Serial.print("You sent: " );
+      // Serial.println(stagedCommand);
+      // Serial.print(" which is ");
+      // Serial.print(bitRead(stagedCommand,3));
+      // Serial.print(bitRead(stagedCommand,2));
+      // Serial.print(bitRead(stagedCommand,1));
+      // Serial.println(bitRead(stagedCommand,0)); 
+      while(stagedCommand) {}; // Wait until the command is unstaged
+    }
 
-  // if (ticks > 76) { 
-  //   digitalWriteFast(ledPin, LED_State ? HIGH : LOW);
-  //   LED_State = !LED_State;
-  //   ticks = 0;
-  // }
-  // val = digitalReadFast(controlIn);
-  // digitalWriteFast(controlOut, val);
-
-  //digitalWrite(controlOut, digitalRead(controlIn));
-  //delay(100);
-
-  // digitalWrite(ledPin, LED_State ? HIGH : LOW); // sets the LED on
-  // delay(1000);                // waits for a second
-  // digitalWrite(ledPin, !LED_State ? HIGH : LOW);  // sets the LED off
-  // delay(1000);                // waits for a second  
 }
 
 void tick() {
@@ -76,24 +75,29 @@ void tick() {
 }
 
 void clockRising() {
-  if (millis() - lastTick > 5) ticks = 0;
+  if (millis() - lastTick > 5) {
+    // Look for a 5ms pause to find the first tick
+    ticks = 0;
+    command = stagedCommand; // make the waiting command executable
+    stagedCommand = 0; // clear the staging buffer to shift the queue forward
+  }
   lastTick = millis();
   ticks++;
 
-  // proof of concept -- press DOWN
   if (command) {
+    // For the last 4 ticks - write the respective command bit to the control line
     switch (ticks) {
       case 73:
-        digitalWriteFast(controlOut, HIGH);
+        digitalWriteFast(controlOut, bitRead(command,3));
         break;
       case 74:
-        digitalWriteFast(controlOut, HIGH);
+        digitalWriteFast(controlOut, bitRead(command,2));
         break;
       case 75:
-        digitalWriteFast(controlOut, HIGH);
+        digitalWriteFast(controlOut, bitRead(command,1));
         break;
       case 76:
-        digitalWriteFast(controlOut, HIGH);
+        digitalWriteFast(controlOut, bitRead(command,0));
     }
   }
 }
@@ -106,4 +110,14 @@ void clockFalling() { // bang down
 void bangControl() {
   controlLevel = digitalReadFast(controlIn);
   digitalWriteFast(controlOut, controlLevel);
+}
+
+void flashLed(int times, int period) {
+  // Utility function to flash the LED
+  for(int n=1; n<=times; n++) {
+    digitalWrite(ledPin, HIGH);
+    delay(period/2);
+    digitalWrite(ledPin, LOW);
+    delay(period/2);
+  }
 }

@@ -4,6 +4,10 @@ const app = Express();
 const Comms = require('./comms');
 const Decoder = require('./decoder');
 
+const SerialPort = require('serialport');
+const Readline = require('@serialport/parser-readline');
+const port = new SerialPort('/dev/ttyACM0', { baudRate: 115200 });
+
 app.get('/', async function (req, res) {
     let panelData = (await Comms.readData()).dataArray;
     let decoded =  Decoder.decodeDisplay(panelData);
@@ -44,6 +48,17 @@ app.get('/readcontrols', async function (req, res) {
         response += `${controlsData.join('')}<br>`
     }
     res.send(response);
+});
+
+app.get('/serial', async function (req, res) {
+    let commands = [15,15,15]
+    console.log(`writing ${commands}`);
+    port.write(commands, (err) => {
+        if (err) {
+          return console.log('Error on write: ', err.message);
+        }
+    });
+    res.send("ok");
 });
 
 app.listen(process.env.PORT || 3000);

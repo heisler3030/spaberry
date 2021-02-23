@@ -6,7 +6,8 @@
   "author": "heisler3030@users.noreply.github.com",
   "dependencies": {
     "express": "^4.17.1",
-    "pigpio": "^3.3.0"
+    "pigpio": "^3.3.0",
+    "serialport": "^9.0.7"
   },
   "scripts": {
     "launch": "sudo /home/pi/.nvm/versions/node/v15.6.0/bin/node index.js 2>&1 | tee /home/pi/logs/spaberryLocal.log"
