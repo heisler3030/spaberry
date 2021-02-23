@@ -18,13 +18,9 @@ volatile bool LED_State = true;
 void setup() {
   pinModeFast(ledPin, OUTPUT);
   digitalWriteFast(ledPin, LOW);
-
-  pinModeFast(data, INPUT);
-  pinModeFast(clock, INPUT);
   pinModeFast(controlIn, INPUT);
   pinModeFast(controlOut, OUTPUT);
-
-  digitalWriteFast(controlOut, LOW);  // Set controlOut to low as starting point - won't need this once there is a pulldown in place
+  digitalWriteFast(controlOut, LOW);  // Set controlOut to low as starting point
 
   // Await a HIGH on controlIn and flash the LED while waiting
   while(digitalReadFast(controlIn) != HIGH) {
@@ -34,16 +30,25 @@ void setup() {
     delay(1000);                // waits for a second  
   }
 
+  pinModeFast(data, INPUT);
+  pinModeFast(clock, INPUT);
+  // pinModeFast(controlOut, OUTPUT);
+ // digitalWriteFast(controlOut, LOW);  // Set controlOut to low as starting point - won't need this once there is a pulldown in place
+
+
   // Initiate interrupt routines
   attachInterrupt(digitalPinToInterrupt(controlIn), bangControl, CHANGE);  
   attachInterrupt(digitalPinToInterrupt(clock), tick, RISING);
+
+  digitalWriteFast(controlOut, HIGH);  // Set control high to init board
+
 
 }
 
 void loop() {
   
   // FOR TESTING ONLY
-  delay(1000); // Wait 5 seconds
+  delay(1000); // Wait 1 seconds
   command = 15; // Set command to 'true'
   //if (command) digitalWriteFast(ledPin, HIGH);  // if command is true, turn on the LED
 
