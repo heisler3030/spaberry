@@ -22,11 +22,12 @@ module.exports.decodeDisplay = (dataArray) => {
     const displayStatus = {
         display: [digit1, digit2, digit3, digit4].join(''),
         setHeat: _getBit(dataArray, 41),
-        mode: _getBit(dataArray, 60) ? "Standard" : "Economy",
-        heating: _getBit(dataArray, 40) ? "ON" : "OFF",
-        blower: _getBit(dataArray, 43) ? "ON" : "OFF",
-        jets: _getBit(dataArray, 49) ? "ON" : "OFF",
-        light: _getBit(dataArray, 48) ? "ON" : "OFF",
+        mode: _getBit(dataArray, 60),
+        heating: _getBit(dataArray, 40),
+        blower: _getBit(dataArray, 43),
+        pump: _getBit(dataArray, 49),
+        jets: _getBit(dataArray, 50),
+        light: _getBit(dataArray, 48),
         temperature: temperature  
     }
 
