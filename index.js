@@ -100,7 +100,8 @@ app.get('/mode', async function (req, res) {
 });
 
 app.get('/change', async function (req, res) {
-    await changeTempTo(90);
+    if (req.query.temp == null) throw Error ("no temp specified")
+    await changeTempTo(req.query.temp);
     res.send("ok");
 });
 
@@ -128,19 +129,22 @@ async function currentState() {
 
 async function changeTempTo(targetTemp) {
     if (targetTemp > Config.MAX_TEMP || targetTemp < Config.MIN_TEMP) throw new Error (`Temperature must be between ${Config.MIN_TEMP} and ${Config.MAX_TEMP}`)
-    let currentTemp = (await currentState()).setTemp
+    let state = await currentState();
+    let currentTemp = state.setTemp
     let delta = targetTemp - currentTemp;
     let command;
-    let commands = []
 
     if (debug) console.log(`changeTempTo: ${targetTemp} from ${currentTemp} is ${delta}`);
     if (delta > 0) command = Config.UP_BUTTON;
     if (delta < 0) command = Config.DOWN_BUTTON;
     // if it's zero we'll deal later
     
-    for (let i=1; i<=(Math.abs(delta)+1); i++) {
-        commands.push(command)
-    }
+    // for (let i=1; i<=(Math.abs(delta)+1); i++) {
+    //     commands.push(command)
+    // }
+    // Fill an array with delta button presses to reach target temp
+    let commands = new Array(Math.abs(delta)).fill(command);
+    if (!state.setHeat) commands.push(command); // add one more click if it is not already in setHeat mode
     arduino.write(commands);
 }
 
