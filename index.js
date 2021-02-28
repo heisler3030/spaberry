@@ -10,28 +10,6 @@ const SerialPort = require('serialport');
 const Readline = require('@serialport/parser-readline');
 const arduino = new SerialPort('/dev/ttyACM0', { baudRate: 115200 });
 
-
-app.get('/', async function (req, res) {
-    let response = `
-        <html> 
-            <body>
-                <span><a href="/json">Status</a></span><br>    
-                <span><a href="/mode">Mode</a></span><br>
-                <span><a href="/tempup">Temp Up</a></span><br>
-                <span><a href="/tempup">Temp Down</a></span><br>
-                <span><a href="/tempup">Temp Up</a></span><br>
-            </body>
-        </html>
-    `
-    res.send(response);
-});
-
-app.get('/crash', async function (req, res) {
-    let pd1 = currentState();
-    let panelData = await currentState();
-    res.send("ok");
-});
-
 app.get('/json', async function (req, res) {
     let panelData = await currentState();
     res.send(panelData);

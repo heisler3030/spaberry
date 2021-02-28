@@ -1,7 +1,7 @@
 const Gpio = require('pigpio').Gpio;
 const Notifier = require('pigpio').Notifier;
 const Config = require('./config');
-const debug = true
+const debug = false
 //const debug = Config.debug;
 
 const clockPin = 5;  // pin with clock signal from board
@@ -21,7 +21,7 @@ module.exports.readData = () => {
         let dataArray = []
         let controlsArray = []
 
-        notifier.name = Date.now().toString(36) + Math.random().toString(36).substring(2);
+        notifier.name = (Date.now().toString(36) + Math.random().toString(36).substring(2)).substring(14); //klogwoewfyio2v3fa0e
 
         if (debug) console.log(`starting notifier... ${notifier.name}`);
 
@@ -30,7 +30,8 @@ module.exports.readData = () => {
 
 
         bitstream.on('data', (buf) => {
-            if (debug) console.log(`inbound data received`);
+            if (debug) console.log(`inbound data received for notifier ${notifier.name}.  Destroyed? ${bitstream.destroyed}`);
+            if (bitstream.destroyed) return;  // So apparently a destroyed bitstream can still return data... wtf
 
             for (let ix = 0; ix < buf.length; ix += Notifier.NOTIFICATION_LENGTH) {
                 if(debug) console.log(`Loop: ix = ${ix} with dataArray.length = ${dataArray.length}, not: ${notifier.name}`)
@@ -43,7 +44,7 @@ module.exports.readData = () => {
 
                 const tickdiff = tick - (lastTick || tick);  // hrtime since last high clock (or is for first iteration where there is no lastTick)
                 
-                // Ensure we are at start of clock by waiting for a gap of at least 10000us (skip this once we are reading data)
+                // Ensure we are at start of clock by waiting for a gap of at least 5000us (skip this once we are reading data)
                 if (!dataReady && tickdiff < tickThreshold) {
                     if (debug) console.log(`awaiting start tick: ${tickdiff}`)
                     lastTick = tick;
@@ -52,9 +53,18 @@ module.exports.readData = () => {
                                 
                 if (dataArray.length > 0 && tickdiff >= tickThreshold) {  // Once we are reading data, break if we see another big tickdiff
                     if (debug) console.log(`break on tickdiff = ${tickdiff} with dataArray.length = ${dataArray.length}, notifier: ${notifier.name}`)
+                    if (debug) console.log(`destroying bitstream... ${notifier.name}`);
                     bitstream.destroy();
-                    dataReady = false
-                    break
+                    if (debug) console.log(`closing notifier... ${notifier.name}`);
+                    notifier.close();
+                    if (debug) console.log(`returning [${dataArray.join('')}] notifier: ${notifier.name}`)
+                    resolve(
+                        {
+                            dataArray: dataArray,
+                            controlsArray: controlsArray
+                        }
+                    );
+                    break;
                 };
 
                 let dataBit = ((level & (1 << dataPin)) != 0) ? 1 : 0;  // read data pin
@@ -69,16 +79,5 @@ module.exports.readData = () => {
             }
         });
 
-        bitstream.on('close', (data) => {
-            if (debug) console.log(`closing notifier... ${notifier.name}`);
-            notifier.close();
-            if (debug) console.log(`returning [${dataArray.join('')}] notifier: ${notifier.name}`)
-            resolve(
-                {
-                    dataArray: dataArray,
-                    controlsArray: controlsArray
-                }
-            );
-        });
     })
 }

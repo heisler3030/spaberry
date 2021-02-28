@@ -20,6 +20,7 @@ module.exports.decodeDisplay = (dataArray) => {
     let temperature = (100 * digit1) + (10 * digit2) + (1 * digit3);
     
     const displayStatus = {
+        bits: dataString,
         display: [digit1, digit2, digit3, digit4].join(''),
         setHeat: _getBit(dataArray, 41),
         mode: _getBit(dataArray, 60),
@@ -42,7 +43,7 @@ function _getBit(array, bit) {
 }
 
 const _digitMap = {
-    "1111110":"0", // to prevent evaluation to 'false'
+    "1111110":"0", // as string to prevent evaluation to 'false'
     "0110000":1,
     "1101101":2,
     "1111001":3,
