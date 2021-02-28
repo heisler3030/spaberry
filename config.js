@@ -1,5 +1,5 @@
 module.exports = {
-    debug: true,
+    debug: false,
 
     UP_BUTTON: 14, //[1,1,1,0]
     DOWN_BUTTON: 15, //[1,1,1,1]
