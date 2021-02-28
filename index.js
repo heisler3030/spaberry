@@ -15,7 +15,8 @@ app.get('/', async function (req, res) {
     let response = `
         <html> 
             <body>
-                <span><a href="/mode">Mode</a></span><br>    
+                <span><a href="/json">Status</a></span><br>    
+                <span><a href="/mode">Mode</a></span><br>
                 <span><a href="/tempup">Temp Up</a></span><br>
                 <span><a href="/tempup">Temp Down</a></span><br>
                 <span><a href="/tempup">Temp Up</a></span><br>
@@ -25,36 +26,16 @@ app.get('/', async function (req, res) {
     res.send(response);
 });
 
-// app.get('/', async function (req, res) {
-//     let panelData = (await Comms.readData()).dataArray;
-//     let decoded =  Decoder.decodeDisplay(panelData);
-
-//     let response = `
-//         <html> 
-//             <body>
-//                 <span>Status: ${panelData.join('')}</span><br>
-//                 <span>Temp: ${decoded.display ? "Standard" : "Economy"}</span><br>
-//                 <span>Mode: ${decoded.mode}</span><br>
-//                 <span>Blower: ${decoded.blower ? "ON" : "OFF"}</span><br>
-//                 <span>Heating: ${decoded.heating ? "ON" : "OFF"}</span><br>
-//                 <span>Pump: ${decoded.pump ? "ON" : "OFF"}</span><br>
-//                 <span>Jets: ${decoded.jets ? "ON" : "OFF"}</span><br>
-//                 <span>Light: ${decoded.light ? "ON" : "OFF"}</span><br>
-//             </body>
-//         </html>
-//     `
-//     res.send(response);
-// });
+app.get('/crash', async function (req, res) {
+    let pd1 = currentState();
+    let panelData = await currentState();
+    res.send("ok");
+});
 
 app.get('/json', async function (req, res) {
     let panelData = await currentState();
     res.send(panelData);
 });
-
-// app.get('/command', async function (req, res) {
-//     let commandresult = (await Comms.sendCommand())
-//     res.send(commandresult);
-// });
 
 app.get('/readcontrols', async function (req, res) {
     let response = "";
@@ -64,28 +45,6 @@ app.get('/readcontrols', async function (req, res) {
         response += `${controlsData.join('')}<br>`
     }
     res.send(response);
-});
-
-app.get('/tempdown', async function (req, res) {
-    let commands = [15,15,15]
-    console.log(`writing ${commands}`);
-    arduino.write(commands, (err) => {
-        if (err) {
-          return console.log('Error on write: ', err.message);
-        }
-    });
-    res.send("ok");
-});
-
-app.get('/tempup', async function (req, res) {
-    let commands = [14,14,14]
-    console.log(`writing ${commands}`);
-    arduino.write(commands, (err) => {
-        if (err) {
-          return console.log('Error on write: ', err.message);
-        }
-    });
-    res.send("ok");
 });
 
 app.get('/mode', async function (req, res) {
@@ -137,11 +96,7 @@ async function changeTempTo(targetTemp) {
     if (debug) console.log(`changeTempTo: ${targetTemp} from ${currentTemp} is ${delta}`);
     if (delta > 0) command = Config.UP_BUTTON;
     if (delta < 0) command = Config.DOWN_BUTTON;
-    // if it's zero we'll deal later
-    
-    // for (let i=1; i<=(Math.abs(delta)+1); i++) {
-    //     commands.push(command)
-    // }
+
     // Fill an array with delta button presses to reach target temp
     let commands = new Array(Math.abs(delta)).fill(command);
     if (!state.setHeat) commands.push(command); // add one more click if it is not already in setHeat mode
