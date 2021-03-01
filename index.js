@@ -10,6 +10,12 @@ const SerialPort = require('serialport');
 const Readline = require('@serialport/parser-readline');
 const arduino = new SerialPort('/dev/ttyACM0', { baudRate: 115200 });
 
+// Current display readout
+app.get('/display', async function (req, res) {
+    let panelData = Decoder.decodeDisplay((await Comms.readData()).dataArray);
+    res.send(panelData);
+});
+
 app.get('/json', async function (req, res) {
     let panelData = await currentState();
     res.send(panelData);
@@ -27,7 +33,7 @@ app.get('/readcontrols', async function (req, res) {
 
 app.get('/mode', async function (req, res) {
     let commands = [8]
-    console.log(`writing ${commands}`);
+    if (debug )console.log(`writing ${commands}`);
     arduino.write(commands, (err) => {
         if (err) {
           return console.log('Error on write: ', err.message);
@@ -47,9 +53,14 @@ async function currentState() {
     let currentTemp
 
     let panelData = Decoder.decodeDisplay((await Comms.readData()).dataArray);
+    while (panelData.tempUp || panelData.tempDown) { // If the temp is being set, wait for it to complete
+        await timersPromises.setTimeout(500);
+        panelData = Decoder.decodeDisplay((await Comms.readData()).dataArray);
+    }
     while (panelData.setHeat) {  // If it is already on the setHeat screen, read setTemp and wait for it to return
+        // TODO:  Consider scenario where it is in the process of raising setTemp
         setTemp = panelData.temperature
-        await timersPromises.setTimeout(1000);
+        await timersPromises.setTimeout(500);
         panelData = Decoder.decodeDisplay((await Comms.readData()).dataArray);
     }
     currentTemp = panelData.temperature  // Now that we are not on setHeat, record the current temp

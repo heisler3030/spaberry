@@ -25,6 +25,8 @@ module.exports.decodeDisplay = (dataArray) => {
         setHeat: _getBit(dataArray, 41),
         mode: _getBit(dataArray, 60),
         heating: _getBit(dataArray, 40),
+        tempUp: _getBit(dataArray, 30),   // display is in temp Up mode
+        tempDown: _getBit(dataArray, 39), // display is in temp Down mode
         blower: _getBit(dataArray, 43),
         pump: _getBit(dataArray, 49),
         jets: _getBit(dataArray, 50),
