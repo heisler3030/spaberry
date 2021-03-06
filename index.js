@@ -66,7 +66,7 @@ async function currentState() {
     currentTemp = panelData.temperature  // Now that we are not on setHeat, record the current temp
     while (!setTemp) {
         arduino.write([Config.DOWN_BUTTON]); // Send a keypress to activate the setHeat screen
-        await timersPromises.setTimeout(250);
+        await timersPromises.setTimeout(500);
         panelData = Decoder.decodeDisplay((await Comms.readData()).dataArray);
         if (panelData.setHeat) setTemp = panelData.temperature  // Confirm setHeat screen and record setTemp
     }

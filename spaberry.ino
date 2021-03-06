@@ -1,3 +1,6 @@
+// To upload
+// ~/Applications/arduino-1.8.5/arduino --upload ~/spaberry/spaberry.ino --port /dev/ttyACM0*
+
 #include <digitalWriteFast.h>
 
 // Note: 2 and 3 are interrupt-capable
@@ -53,7 +56,7 @@ void loop() {
   // On clock zero activate and move next command into staging variable
   if(Serial.available()){
       stagedCommand = Serial.read();  // Receives as byte
-      flashLed(2,250);
+      flashLed(2,200);
       // Serial.print("You sent: " );
       // Serial.println(stagedCommand);
       // Serial.print(" which is ");
