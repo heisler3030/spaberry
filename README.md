@@ -6,6 +6,32 @@ Reads and simulates the protocol of the 8-button [Balboa 51285 Deluxe Digital Co
 Monitor and control set temperature and spa mode through a web-based interface.  
 Combine with [homebridge-spaberry](https://github.com/heisler3030/homebridge-spaberry) module for Homekit / Siri control on Apple devices.
 
+# Application Mechanics
+
+The app deploys a simple express webserver on the Pi returning JSON status and accepting commands via HTTP.
+
+Requests for Spa status use the Pi to read a data and clock signal from the spa and decode the display.  To get the current set temperature, a button press is simulated and the display is read again.
+
+Button presses are achieved using the Arduino which intercepts and modifies the realtime control signal between the topside and the controller board.  Currently implemented controls are temp up, temp down, and spa mode.
+
+**/json**
+```
+{
+  "bits": "0100011110111111111111000000000001000100000110001000001000001000000000000000",
+  "display": "86F",
+  "setHeat": 0,
+  "mode": 0,
+  "heating": 0,
+  "tempUp": 0,
+  "tempDown": 0,
+  "blower": 0,
+  "pump": 1,
+  "jets": 0,
+  "light": 0,
+  "temperature": 86,
+  "setTemp": 85
+}
+```
 
 # Requirements
 
@@ -18,14 +44,6 @@ You will need to assemble a hardware setup which intercepts the RJ45 topside-to-
 [SpaBerry project log](https://docs.google.com/document/d/1xuc5N6-Q7J7bQxBARYjUywhqkIFjOnh8vAHqEya5QAI/edit?usp=sharing)
 
 ![Spaberry Wiring Diagram](https://raw.githubusercontent.com/heisler3030/spaberry/main/SpaBerry.png)
-
-# Application Mechanics
-
-The app deploys a simple express webserver on the Pi returning JSON status and accepting commands via HTTP.
-
-Requests for Spa status use the Pi to read a data and clock signal from the spa and decode the display.  To get the current set temperature, a button press is simulated and the display is read again.
-
-Button presses are achieved using the Arduino which intercepts and modifies the realtime control signal between the topside and the controller board.  Currently implemented controls are temp up, temp down, and spa mode.
 
 
 # Installation
