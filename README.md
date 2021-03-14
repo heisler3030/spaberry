@@ -17,6 +17,8 @@ You will need to assemble a hardware setup which intercepts the RJ45 topside-to-
 
 [SpaBerry project log](https://docs.google.com/document/d/1xuc5N6-Q7J7bQxBARYjUywhqkIFjOnh8vAHqEya5QAI/edit?usp=sharing)
 
+![Spaberry Wiring Diagram](https://raw.githubusercontent.com/heisler3030/spaberry/main/SpaBerry.png)
+
 # Application Mechanics
 
 The app deploys a simple express webserver on the Pi returning JSON status and accepting commands via HTTP.
