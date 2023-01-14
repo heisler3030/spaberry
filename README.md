@@ -50,6 +50,10 @@ You will need to assemble a hardware setup which intercepts the RJ45 topside-to-
 
 The spaberry library is not a ready-to-deploy application but should be easily forked and adapted to your situation.  Key variables in the header of [comms.js](https://github.com/heisler3030/spaberry/blob/main/comms.js) and [spaberry.ino](https://github.com/heisler3030/spaberry/blob/main/spaberry.ino) should be modified to reflect the specific GPIO pinouts in use on the Arduino and Raspberry Pi.
 
+The reminders.js utility can be configured as a cron to provide periodic reminders if you have left the Spa above a certain set temperature.  It must be set up with telegram variables by following the tutorial here:
+
+https://medium.com/javarevisited/sending-a-message-to-a-telegram-channel-the-easy-way-eb0a0b32968
+
 # Potential refinements
 
 Future adaptations of the SpaBerry app may consider using the Arduino to both read and write the signal, as it is much more capable of reading the high-speed signal than the Pi, given the simpler architecture.  This will require adapting the code to pass the data back via the USB serial interface.

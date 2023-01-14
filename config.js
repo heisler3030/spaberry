@@ -6,5 +6,11 @@ module.exports = {
     MODE_BUTTON: 8, //[1,0,0,0]
 
     MAX_TEMP: 104,
-    MIN_TEMP: 80
+    MIN_TEMP: 80,
+
+    BOT_TOKEN: '',
+    TELEGRAM_CHANNEL: '',
+    STATUS_URL: 'http://localhost:3000/json',
+    REMINDER_THRESHOLD: 98
+
 }
