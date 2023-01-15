@@ -10,7 +10,6 @@ async function getStatus() {
     if (status.setTemp >= Config.REMINDER_THRESHOLD) {
         let message = `Current setTemp: ${status.setTemp}`
         let url = `https://api.telegram.org/bot${Config.BOT_TOKEN}/sendMessage?chat_id=${Config.TELEGRAM_CHANNEL}&text=${message}`; 
-        console.log('yup')
         await fetch(url)
     }
 }
