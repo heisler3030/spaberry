@@ -5,10 +5,10 @@
   "main": "index.js",
   "author": "heisler3030@users.noreply.github.com",
   "dependencies": {
-    "express": "^4.17.1",
-    "node-fetch": "^2.6.6",
-    "pigpio": "^3.3.0",
-    "serialport": "^9.0.7"
+    "express": "^4.18.2",
+    "node-fetch": "^3.3.1",
+    "pigpio": "^3.3.1",
+    "serialport": "^11.0.0"
   },
   "scripts": {
     "launch": "sudo /home/pi/.nvm/versions/node/v15.6.0/bin/node index.js 2>&1 | tee /home/pi/logs/spaberryLocal.log"

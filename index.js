@@ -6,9 +6,9 @@ const Decoder = require('./decoder');
 const timersPromises = require('timers/promises');
 const debug = Config.debug;
 
-const SerialPort = require('serialport');
+const { SerialPort } = require('serialport');
 const Readline = require('@serialport/parser-readline');
-const arduino = new SerialPort('/dev/ttyACM0', { baudRate: 115200 });
+const arduino = new SerialPort({path: '/dev/ttyACM0', baudRate: 115200 });
 
 // Current display readout
 app.get('/display', async function (req, res) {
@@ -49,9 +49,9 @@ app.get('/change', async function (req, res) {
 });
 
 // Send array of commands to arduino
-app.post('/command', async function (req, res) {
+app.get('/command', async function (req, res) {
     if (req.query.commands == null) throw Error ("no commands specified")
-    arduino.write(commands);
+    arduino.write(req.query.commands);
     res.send("ok");
 });
 
