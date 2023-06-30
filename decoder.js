@@ -7,21 +7,13 @@ module.exports.decodeDisplay = (dataArray) => {
 
     dataString = dataArray.join('')
 
-    // substring() extracts characters from indexStart up to but not including indexEnd
-    let byte1 = dataString.substring(0,7);
-    let byte2 = dataString.substring(8,15);
-    let byte3 = dataString.substring(15,22);
-
-    let digit4 = _digitMap[byte1] || "?";
-    let digit3 = _digitMap[byte2] || "?";
-    let digit2 = _digitMap[byte3] || "?";
-    let digit1 = _getBit(dataArray, 25) ? 1 : null;
-
-    let temperature = (100 * digit1) + (10 * digit2) + (1 * digit3);
+    let displayBits = dataString.substring(1,29) // 4x 7-bit digits, with first bit ignored
+    let display = _decodeDigits(displayBits)
+    let temperature = _convertTemp(display)
     
     const displayStatus = {
         bits: dataString,
-        display: [digit1, digit2, digit3, digit4].join(''),
+        display: display.join('').trim(),
         setHeat: _getBit(dataArray, 41),
         mode: _getBit(dataArray, 60),
         heating: _getBit(dataArray, 40),
@@ -34,8 +26,6 @@ module.exports.decodeDisplay = (dataArray) => {
         temperature: temperature  
     }
 
-    if (debug) console.log(`byte1: ${byte1} byte2: ${byte2} byte3: ${byte3}`)
-    if (debug) console.log(`displayStatus: ${JSON.stringify(displayStatus)}`)
     return displayStatus
 
 }
@@ -44,7 +34,48 @@ function _getBit(array, bit) {
     return parseInt(array[bit-1]);
 }
 
+function _decodeDigits(bits) {
+
+    // look up all 4 bits in the table, for both normal and inverted orientation
+    // in at least one case (F, C, L, 1) it will return a ? when inverted - this is the 'wrong' orientation
+    // Whichever one has ?s is the 'wrong' one
+    // Least-significant digit comes first (when display not inverted)
+
+    let display = [
+        _digitMap[bits.slice(21,28)] || "?",
+        _digitMap[bits.slice(14,21)] || "?",
+        _digitMap[bits.slice(7,14)] || "?",
+        _digitMap[bits.slice(0,7)] || "?"
+    ]
+
+    let inverted = [
+        _invertedDigitMap[bits.slice(0,7)] || "?",
+        _invertedDigitMap[bits.slice(7,14)] || "?",
+        _invertedDigitMap[bits.slice(14,21)] || "?",
+        _invertedDigitMap[bits.slice(21,28)] || "?"
+    ]
+
+    if (debug) {
+        console.log(`digit1: ${bits.slice(0,7)} digit2: ${bits.slice(7,14)} digit3: ${bits.slice(14,21)} digit4: ${bits.slice(21,28)}`)
+        console.log(`display:${display} inverted:${inverted}`)
+    }
+
+    if (display.includes("?")) {
+        return inverted
+    } else return display
+
+}
+
+function _convertTemp(display) {
+    let digits = display.slice(0,3).join('')
+    let tempString = parseInt(digits)
+    if (tempString == NaN) {
+        return 60 
+    } else return tempString
+}
+
 const _digitMap = {
+    "0000000":" ",
     "1111110":"0", // as string to prevent evaluation to 'false'
     "0110000":1,
     "1101101":2,
@@ -55,5 +86,24 @@ const _digitMap = {
     "1110000":7,
     "1111111":8,
     "1110011":9,
-    "0100011":"F"   
+    "1000111":"F",
+    "1001110":"C",
+    "0001110":"L"
+}
+
+const _invertedDigitMap = {
+    "0000000":" ",
+    "1111110":"0", // as string to prevent evaluation to 'false'
+    "0000110":1,
+    "1101101":2,
+    "1001111":3,
+    "0010111":4,
+    "1011011":5,
+    "1111011":6,
+    "0001110":7,
+    "1111111":8,
+    "0011111":9,
+    "0111001":"F",
+    "1111000":"C",
+    "1110000":"L"
 }

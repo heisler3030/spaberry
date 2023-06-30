@@ -48,6 +48,13 @@ app.get('/change', async function (req, res) {
     res.send("ok");
 });
 
+// Send array of commands to arduino
+app.post('/command', async function (req, res) {
+    if (req.query.commands == null) throw Error ("no commands specified")
+    arduino.write(commands);
+    res.send("ok");
+});
+
 async function currentState() {
     let setTemp
     let currentTemp
