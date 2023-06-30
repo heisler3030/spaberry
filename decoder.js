@@ -36,7 +36,7 @@ function _getBit(array, bit) {
 
 function _decodeDigits(bits) {
 
-    // look up all 4 bits in the table, for both normal and inverted orientation
+    // look up all 4 display digits in the table, for both normal and inverted orientation
     // in at least one case (F, C, L, 1) it will return a ? when inverted - this is the 'wrong' orientation
     // Whichever one has ?s is the 'wrong' one
     // Least-significant digit comes first (when display not inverted)
@@ -69,7 +69,7 @@ function _decodeDigits(bits) {
 function _convertTemp(display) {
     let digits = display.slice(0,3).join('')
     let tempString = parseInt(digits)
-    if (tempString == NaN) {
+    if (tempString == NaN) { // Likely 'C00L' or '0n'
         return 60 
     } else return tempString
 }
@@ -88,7 +88,10 @@ const _digitMap = {
     "1110011":9,
     "1000111":"F",
     "1001110":"C",
-    "0001110":"L"
+    "0001110":"L",
+    "0010101":"n",
+    "0110111":"H",
+    "1001111":"E"
 }
 
 const _invertedDigitMap = {
@@ -105,5 +108,8 @@ const _invertedDigitMap = {
     "0011111":9,
     "0111001":"F",
     "1111000":"C",
-    "1110000":"L"
+    "1110000":"L",
+    "0100011":"n",
+    "0110111":"H",
+    "1111001":"E"
 }
