@@ -1,5 +1,4 @@
 const util = require('util');
-const fetch = require('node-fetch')
 const Config = require('./config');
 const debug = Config.debug
 
