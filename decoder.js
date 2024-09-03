@@ -14,8 +14,9 @@ module.exports.decodeDisplay = (dataArray) => {
     const displayStatus = {
         bits: dataString,
         display: display.join('').trim(),
+        inverted: _getBit(dataArray, 29), // 0 = normal, 1 = inverted
         setHeat: _getBit(dataArray, 41),
-        mode: _getBit(dataArray, 60),
+        mode: _getBit(dataArray, 60), // 0 = Economy, 1 = Standard (61 is inverse)
         heating: _getBit(dataArray, 40),
         tempUp: _getBit(dataArray, 30),   // display is in temp Up mode
         tempDown: _getBit(dataArray, 39), // display is in temp Down mode
@@ -23,7 +24,19 @@ module.exports.decodeDisplay = (dataArray) => {
         pump: _getBit(dataArray, 49),
         jets: _getBit(dataArray, 50),
         light: _getBit(dataArray, 48),
-        temperature: temperature  
+        temperature: temperature,
+        thirtyOne: _getBit(dataArray, 31),
+        thirtyTwo: _getBit(dataArray, 32),
+        thirtyThree: _getBit(dataArray, 33),
+        thirtyFour: _getBit(dataArray, 34),
+        thirtyFive: _getBit(dataArray, 35),
+        thirtySix: _getBit(dataArray, 36),
+        thirtySeven: _getBit(dataArray, 37),
+        thirtyEight: _getBit(dataArray, 38),
+        fortyTwo: _getBit(dataArray, 42),
+        fortyFour: _getBit(dataArray, 44),
+        fortySix: _getBit(dataArray, 46),
+        fiftyFive: _getBit(dataArray, 55)
     }
 
     return displayStatus

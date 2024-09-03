@@ -10,20 +10,26 @@ const { SerialPort } = require('serialport');
 const Readline = require('@serialport/parser-readline');
 const arduino = new SerialPort({path: '/dev/ttyACM0', baudRate: 115200 });
 
-// Current display readout
+const { Mutex } = require('async-mutex');
+const mutex = new Mutex(); // Lock to prevent multiple commands from being sent at once
+
+// Current display readout - non-blocking
 app.get('/display', async function (req, res) {
     let panelData = Decoder.decodeDisplay((await Comms.readData()).dataArray);
     res.send(panelData);
 });
 
+// Get Spa status - blocking
 app.get('/json', async function (req, res) {
-    let panelData = await currentState();
-    res.send(panelData);
+    await mutex.runExclusive(async () => {
+        let panelData = await currentState();
+        res.send(panelData);
+    })
 });
 
+// Read display data 100 times for debugging
 app.get('/readcontrols', async function (req, res) {
     let response = "";
-
     for (let i=0; i< 100; i++) {
         let controlsData = (await Comms.readData()).controlsArray;
         response += `${controlsData.join('')}<br>`
@@ -31,28 +37,35 @@ app.get('/readcontrols', async function (req, res) {
     res.send(response);
 });
 
+// Toggle Standard and Eco modes
 app.get('/mode', async function (req, res) {
-    let commands = [8]
-    if (debug )console.log(`writing ${commands}`);
-    arduino.write(commands, (err) => {
-        if (err) {
-          return console.log('Error on write: ', err.message);
-        }
-    });
+    await mutex.runExclusive(async () => {
+        let commands = [8]
+        if (debug )console.log(`writing ${commands}`);
+        arduino.write(commands, (err) => {
+            if (err) {
+            return console.log('Error on write: ', err.message);
+            }
+        });
+    })
     res.send("ok");
 });
 
 app.get('/change', async function (req, res) {
-    if (req.query.temp == null) throw Error ("no temp specified")
-    await changeTempTo(req.query.temp);
-    res.send("ok");
+    await mutex.runExclusive(async () => {
+        if (req.query.temp == null) throw Error ("no temp specified")
+        await changeTempTo(req.query.temp);
+        res.send("ok");
+    })
 });
 
 // Send array of commands to arduino
 app.get('/command', async function (req, res) {
-    if (req.query.commands == null) throw Error ("no commands specified")
-    arduino.write(req.query.commands);
-    res.send("ok");
+    await mutex.runExclusive(async () => {
+        if (req.query.commands == null) throw Error ("no commands specified")
+        arduino.write(req.query.commands);
+        res.send("ok")
+    })
 });
 
 async function currentState() {
