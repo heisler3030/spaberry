@@ -40,8 +40,8 @@ app.get('/readcontrols', async function (req, res) {
 // Toggle Standard and Eco modes
 app.get('/mode', async function (req, res) {
     await mutex.runExclusive(async () => {
-        let commands = [8]
-        if (debug )console.log(`writing ${commands}`);
+        let commands = [Config.MODE_BUTTON]
+        if (debug) console.log(`writing ${commands}`);
         arduino.write(commands, (err) => {
             if (err) {
             return console.log('Error on write: ', err.message);
@@ -59,12 +59,19 @@ app.get('/change', async function (req, res) {
     })
 });
 
-// Send array of commands to arduino
+// Send command to arduino
 app.get('/command', async function (req, res) {
     await mutex.runExclusive(async () => {
-        if (req.query.commands == null) throw Error ("no commands specified")
-        arduino.write(req.query.commands);
-        res.send("ok")
+        try {
+            const command = req.query.command;
+            if (command == null) throw Error ("no command specified")
+            const isValidCommand = /^\d+$/.test(command) && Number(command) >= 1 && Number(command) <= 15;
+            if (!isValidCommand) throw Error("command must be a digit between 1 and 15");
+            arduino.write(command);
+            res.send("ok")
+        } catch (err) {
+            res.send(err.message)
+        }
     })
 });
 
