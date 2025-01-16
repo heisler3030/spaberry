@@ -67,7 +67,7 @@ app.get('/command', async function (req, res) {
             if (command == null) throw Error ("no command specified")
             const isValidCommand = /^\d+$/.test(command) && Number(command) >= 1 && Number(command) <= 15;
             if (!isValidCommand) throw Error("command must be a digit between 1 and 15");
-            arduino.write(command);
+            arduino.write([Number(command)]);
             res.send("ok")
         } catch (err) {
             res.send(err.message)
